@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	    <!--[if lt IE 9]>
+	      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+
+		<title>WoT Tactic Viewer</title>
+
+		<link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+		<style type="text/css">
+			.margin-top {
+				margin-top: 5px;
+			}
+
+			.disp-block {
+				display: block;
+			}
+
+			.btn-active {
+				color: #333;
+				background-color: #e6e6e6;
+				border-color: #adadad;
+			}
+
+			.hand {
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="page-header">
+				<h1>WoT Tactic Viewer</h1>
+				<p class="lead">Basic demonstration</p>
+			</div>
+			<div class="row">
+				<div class="col-md-8">
+					<div id="canvas-container"></div>
+				</div>
+				<div class="col-md-4">
+					<label for="username">Nickname</label>
+					<div class="input-group" name="username">
+						<input type="text" class="form-control" id="username-input">
+						<span class="input-group-btn">
+							<button type="button" class="btn btn-default" id="username-submit">Save</button>
+						</span>
+					</div>
+					<label class="margin-top" for="map-select">Map</label>
+					<select class="form-control" id="map-select" name="map-select"></select>
+					<label class="margin-top disp-block">Shapes</label>
+					<div class="btn-group">
+                        <button type="button" class="btn btn-default" id="draw-square" data-tool="draw-csq-opts">Square</button>
+						<button type="button" class="btn btn-default" id="draw-circle" data-tool="draw-csq-opts">Circle</button>
+					</div>
+					<div class="tool-options-container disp-block tool" id="draw-csq-opts">
+						<label class="margin-top disp-block" for="draw-csq-opts-colour">Fill colour:</label>
+                        <input type="color" class="colour-tool" name="draw-csq-opts-colour" id="draw-csq-opts-colour" value="#ff0000">
+                        <!-- Add colour picker/stroke size, etc. -->
+					</div>
+					<label class="margin-top disp-block">Drawing</label>
+					<div class="btn-group">
+						<button type="button" class="btn btn-default" id="draw-line">Line</button>
+						<button type="button" class="btn btn-default" id="draw-polygon">Polygon</button>
+						<button type="button" class="btn btn-default" id="draw-arrow">Arrow</button>
+					</div>
+					<label class="margin-top disp-block">Misc</label>
+					<div class="btn-group">
+						<button type="button" class="btn btn-default" id="ping-map" data-tool="ping-map-colour">Ping map</button>
+						<button type="button" class="btn btn-no-hold btn-default" id="clear-map">Clear map</button>
+					</div>
+					<div class="tool-options-container disp-block margin-top">
+                        <label class="margin-top disp-block tool" for="ping-map-colour">Ping colour:</label>
+                        <input type="color" class="tool colour-tool" id="ping-map-colour" name="ping-map-colour" value="#ff0000">
+					</div>
+					<!-- TODO: Add controls -->
+				</div>
+			</div>
+		</div>
+
+		<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+		<script src="./js/kinetic-v5.1.0.min.js"></script>
+		<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script src="./js/tank-viewer.js"></script>
+	</body>
+</html>
