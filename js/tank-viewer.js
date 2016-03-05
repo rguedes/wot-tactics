@@ -1,7 +1,7 @@
 //Client Side
 
 // Global vars
-var stage, map, container, client, selectedTool, nick, drawLayer,room;
+var stage, map, container, client, selectedTool, nick, drawLayer, room, editMode;
 var palette = {};
 
 // Close the socket before the window closes to free up memory
@@ -17,10 +17,13 @@ $(document).ready(function() {
 	
 	client = io("http://localhost:3000");
     room = urlParam('room');
+    editMode = urlParam('edit');
     if(room == null)
         room = "general";
-    
-    console.log(room);
+    if(editMode == null)
+        editMode = false;
+    else
+        editMode = false;
         
     client.emit('subscribe', room);
     
@@ -48,187 +51,30 @@ $(document).ready(function() {
 		if(!nick) return;
 
 		var id = $.now();
-
-		switch(selectedTool) {
-			case "ping-map":
-				// TODO: Add line pings
-				client.emit("pingMap", {
-					x: e.evt.layerX, y: e.evt.layerY,
-					colour: palette["ping-map-colour"],
-					from: nick,
-                    room: room
-				});
-				break;
-			case "draw-square":
-				// Start drawing a rect on the client
-				var colour = palette["draw-csq-opts-colour"];
-
-				down = true;
-				shape = new Kinetic.Rect({
-					name: "rect" + id,
-					x: e.evt.layerX, y: e.evt.layerY,
-					width: 1, height: 1,
-					fill: "rgba(" + colour.r + ", " + 
-						colour.g + ", " + 
-						colour.b + ", 1)",
-					draggable: true
-				});
-
-				// Set on drag listeners for the rect and draw it
-				shape.on("dragstart", function(e) {
-					e.target.moveToTop();
-				});
-				shape.on("dragend", function(e) {
-					client.emit("dragNode", {
-						name: e.target.attrs.name,
-						x: e.target.attrs.x, y: e.target.attrs.y,
-						from: nick,
-                        room: room
-					});
-				});
-				shape.on("mouseover", function(e) {
-					container.css({
-						cursor: "move"
-					});
-				});
-				shape.on("mouseout", function(e) {
-					container.css({
-						cursor: "auto"
-					});
-				});
-
-				drawLayer.add(shape);
-				break;
-			case "draw-circle":
-				// Start drawing a circle on the client
-				var colour = palette["draw-csq-opts-colour"];
-
-				down = true;
-				shape = new Kinetic.Circle({
-					name: "circle" + id,
-					x: e.evt.layerX, y: e.evt.layerY,
-					radius: 1,
-					fill: "rgba(" + colour.r + ", " + 
-						colour.g + ", " + 
-						colour.b + ", 1)",
-					draggable: true
-				});
-
-				// Set on drag listeners for the circle and draw it
-				shape.on("dragstart", function(e) {
-					e.target.moveToTop();
-				});
-				shape.on("dragend", function(e) {
-					client.emit("dragNode", {
-						name: e.target.attrs.name,
-						x: e.target.attrs.x, y: e.target.attrs.y,
-						from: nick,
-                        room: room
-					});
-				});
-				shape.on("mouseover", function(e) {
-					container.css({
-						cursor: "move"
-					});
-
-					new Kinetic.Tween({
-						node: shape,
-						duration: 0.25,
-						easing: Kinetic.Easings.EaseInOut,
-						opacity: 0.8
-					}).play();
-				});
-				shape.on("mouseout", function(e) {
-					container.css({
-						cursor: "auto"
-					});
-
-					new Kinetic.Tween({
-						node: shape,
-						duration: 0.25,
-						easing: Kinetic.Easings.EaseInOut,
-						opacity: 1
-					}).play();
-				});
-
-				drawLayer.add(shape);
-				break;
-			case "draw-line":
-				// TODO: Draw a line
-				break;
-		}
+        if(editMode){
+            // TODO: Add line pings
+            client.emit("pingMap", {
+                x: e.evt.layerX, y: e.evt.layerY,
+                colour: palette["ping-map-colour"],
+                from: nick,
+                room: room
+            });
+        }
 	});
 
-	drawLayer.on("mousemove", function(e) {
-		if(!down) return;
-
-		switch(selectedTool) {
-			case "draw-square":
-				// Update the rect being drawn on the client
-				var pos = shape.attrs;
-
-				shape.setWidth(e.evt.layerX - pos.x);
-				shape.setHeight(e.evt.layerY - pos.y);
-				drawLayer.draw();
-
-				break;
-			case "draw-circle":
-				// Update the circle being drawn on the client
-				var pos = shape.attrs;
-				var radius = Math.round(Math.sqrt(Math.pow(e.evt.layerX - pos.x, 2) + Math.pow(e.evt.layerY - pos.y, 2)));
-
-				shape.setRadius(radius);
-				drawLayer.draw();
-
-				break;
-		}
-	});
-
-	drawLayer.on("mouseup", function(e) {
-		down = false;
-
-		switch(selectedTool) {
-			case "draw-square":
-				// Send the new rect to other clients
-				var attrs = shape.attrs;
-
-				client.emit("drawNode", {
-					type: "rect",
-					x: attrs.x, y: attrs.y,
-					width: attrs.width, height: attrs.height,
-					fill: attrs.fill, 
-					name: attrs.name,
-					from: nick,
-                    room: room
-				});
-				break;
-			case "draw-circle":
-				// Send the new circle to other clients
-				var attrs = shape.attrs;
-
-				client.emit("drawNode", {
-					type: "circle",
-					x: attrs.x, y: attrs.y,
-					radius: attrs.radius,
-					fill: attrs.fill, 
-					name: attrs.name,
-					from: nick,
-                    room: room
-				});
-				break;
-		}
-	});
-
-	// Disable all inputs for disconnected states, enabling them only when connected
+    // Disable all inputs for disconnected states, enabling them only when connected
 	disableInputs(true);
 
 	client.on("connect", function() {
 		if(!nick) {
 			$("#username-submit, #username-input").prop("disabled", false);
 		} else {
-			disableInputs(false);
+            if(editMode){
+                disableInputs(false);
+            }
 		}
 	});
+
 	client.on("disconnect", function() {
 		disableInputs(true);
 	});
@@ -478,7 +324,7 @@ function disableInputs(disable) {
  */
 function changeMap() {
 	// Init map to default if its not intialised
-	map = map || "../img/01_karelia.jpg";
+	map = map || "../img/01_karelia.png";
 
 	// Determine if a map is already loaded
 	if(stage.find(".bg").length == 0) {
